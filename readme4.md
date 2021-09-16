@@ -231,11 +231,73 @@ const circle3 = Circle(15);
     * 원시 값을 반환하면 무시되고 암묵적으로 this가 반환된다.
 * 생성자 함수 내부에서는 return문을 반드시 생략하자.
 
-#### !7-2-4 내부 메서드 [[call]]과 [[Construct]]
+#### 17-2-4 내부 메서드 [[call]]과 [[Construct]]
+* 함수는 객체이므로 일반 객체와 동일하게 동작할 수 있다.
+* 하지만 일반 객체는 호출할 수 없지만 함수는 호출할 수 있다.
+* 함수 객체는 내부 슬롯과 내부 메서드를 포함해서 [[call]], [[Construct]] 같은 내부 메서드를 추가로 가지고 있다.
+* 함수가 일반 함수로서 호출되면 함수 객체의 내부 메서드 [[call]]이 호출되고 new 연산자와 함께 생성자 함수로서 호출되면 내부 메서드 [[Construct]]가 호출된다.
+* 내부 메서드 [[call]]을 갖는 함수 객체를 callable이라고 하며, 내부 메서드 [[Construct]]를 갖는 함수 객체를 constructor, 갖지 않는 함수 객체를 non-constructor라고 부른다.
 
+#### 17-2-5 constructor와 non-constructor의 구분
+* js 엔진은 함수 정의를 평가하여 함수 객체를 생성할 때 함수 정의 방식에 따라 구분한다.
+> constructor: 함수 선언문, 함수 표현식, 클래스
+> non-constructor: 메서드(ES6 메서드 축약 표현), 화살표 함수
+* ECMAScript 사양에서 메서드란 ES6의 메서드 축약 표현만을 의미한다.
+```js
+// 일반 함수 정의: 함수 선언문, 함수 표현식
+function foo() {}
+const bar = function () {};
+// 프로퍼티 x에 할당된 것은 일반 함수 정의이다. 메소드 정의로 인정하지 않는다.
+const baz = {
+  x: function () {}
+};
 
+// 일반 함수로 정의된 함수만이 constructor이다.
+new foo(); // OK
+new bar(); // OK
+new baz.x(); // OK
 
+// 화살표 함수 정의
+const arrow = () => {};
 
+new arrow(); // TypeError: arrow is not a constructor
+
+// 메소드 정의: ES6의 메소드 축약 표현만을 메소드 정의로 인정한다.
+const obj = {
+  x() {}
+};
+
+new obj.x(); // TypeError: obj.x is not a constructor
+```
+
+#### 17-2-6 new 연산자
+* new 연산자와 함께 함수를 호출하면 해당 함수는 생성자 함수로 동작한다.
+  * 내부 메서드 [[Construct]]가 호출된다.
+* new 연산자와 없이 함수를 호출하면 해당 함수는 일반 함수로 호출된다.
+  * 내부 메서드 [[Call]]이 호출된다.
+* 따라서 생성자 함수는 일반적으로 파스칼 케이스로 명명하여 일반 함수와 구별한다.
+
+#### 17-2-7 new.target
+* ES6에서는 new.target을 지원한다.
+* 함수 내부에서 new.target을 사용하면 new 연산자와 함께 생성자 함수로서 호출되었는지 확인할 수 있다.
+  * new 연산자와 함께 생성자 함수로서 호출되면 함수 내부의 new.target은 함수 자신을 가리킨다.
+  * new 연산자와 없이 일반 함수로서 호출되면 함수 내부의 new.target은 undefined이다.
+```js
+function Circle(radius) {
+  // 이 함수가 new 연산자와 함께 호출되지 않았다면 new.target은 undefined
+  if (!new.target) {
+    return new Circle(radius);
+  }
+  this.radius = radius;
+  this.getDiameter = function () {
+    return 2 * this.radius;
+  };
+}
+```
+> 스코프 세이프 생성자 패턴
+> new.target은 ES6에서 도입된 문법이며 IE는 지원하지 않는다.
+> new.target을 사용할 수 없는 상황이라면 스코프 세이프 생성자 패턴을 사용할 수 있다.
+* 대부분의 빌트인 생성자 함수는 new 연산자와 함께 호출되었는지 확인 후 적절한 값을 반환한다.
 
 ## 18장 함수와 일급 객체
 ## 19장 프로토 타입
