@@ -405,4 +405,109 @@ console.log(obj.__proto__ === Object.prototype);  // true
 * 일반 객체와 생성잦 함수로 호출할 수 없는 non-constructor에는 prototype 프로퍼티가 없다.
 
 ## 19장 프로토 타입
+* js는 명령형, 함수형, 프로토타입 기반 객체지향 프로그래밍을 지원하는 멀티 패러다임 프로그래밍 언어다.
+* js는 프로토타입 기반의 객체지향 프로그래밍 언어다.
+* js를 이루고 있는 거의 모든것이 객체다. (원시 타입의 값을 제외한 나머지 값들은 모두 객체다)
+### 19-1 객체지향 프로그래밍
+* 객체지향 프로그래밍은 객체의 집합으로 프로그램을 표현하려는 프로그래밍 패러다임이다.
+* 객체지향 프로그래밍은 실체를 인식하는 철학적 사고를 프로그래밍에 접목하려는 시도에서 시작한다.
+* 실체는 속성을 가지고 있고, 이를 통해 실체를 인식하거나 구별한다.
+* 다양한 속성 중에서 프로그램에 필요한 속성만 간추려 내어 표현하는 것을 추상화라고 한다.
+* 속성을 통해 여러 개의 값을 하나의 단위로 구성한 복합적인 자료구조를 객체라고 한다.
+* 원의 경우 원에는 반지름이라는 속성이 있으며 반지름은 원의 상태를 나타내는 데이터이며 원의 지름, 둘레, 넓이를 구하는 것은 동작이다.
+```js
+const circle = {
+  radius: 5,
+
+  getDiameter() {
+    return 2 * this.radius;
+  },
+
+  getPerimeter() {
+    return 2 * Math.PI * this.radius;
+  },
+
+  getArea() {
+    return Math.PI * this.radius ** 2;
+  },
+}
+```
+* 객체지향 프로그래밍은 개개체의 상태를 나타내는 데이터와 상태 데이터를 조작할 수 있는 동작을 하나의 논리적인 단위로 묶어 생각한다.
+* 객체는 상태 데이터와 동작을 하나의 논리적인 단위로 묶는 복합적인 자료구조라고 할 수 있다.
+* 이때 객체의 상태 데이터를 프로퍼티, 동작을 메서드라고 부른다.
+
+### 19-2 상속과 프로토타입
+* 상속은 어떤 객체의 프로퍼티 또는 메서드를 다른 객체가 상속받아 그대로 사용할 수 있는 것이다.
+```js
+function Circle(radius) {
+  this.radius = radius;
+  this.getArea = function () {
+    return Math.PI * this.radius ** 2;
+  };
+}
+
+const circle1 = new Circle(1);
+const circle2 = new Circle(2);
+```
+* 위 예제에서 getArea 메서드가 중복 생성되므로 하나만 셍성하여 모든 인스턴스가 공유해서 사용하는 것이 바람직하다.
+* js는 프로토타입을 기반으로 상속을 구현한다.
+```js
+function Circle(radius) {
+  this.radius = radius;
+}
+
+// Circle 생성자 함수가 생성한 모든 인스턴스가 getArea 메서드를 공유해서 사용할 수 있도록 프로토타입에 추가한다.
+Circle.prototype.getArea = function () {
+  return Math.PI * this.radius ** 2;
+}
+
+const circle1 = new Circle(1);
+const circle2 = new Circle(2);
+```
+* Circle 생성자 함수가 생성한 모든 인스턴스는 Circle.prototype의 모든 프로퍼티와 메서드를 상속받는다.
+* getArea 메서드는 단 하나만 생성되어 Circle 생성자 함수가 생성하는 모든 인스턴스는 상속받는다.
+* 상속은 코드의 재사용이란 관점에서 매우 유용하다.
+
+### 19-3 프로토타입 객체
+* 프로토타입 객체란 객체 간 상속을 구현하기 위해 사용된다.
+* 프로토타입은 어떤 객체의 상위 개체의 역할을 하는 객체이며, 다른 객체에 공유 프로퍼티를 제공한다.
+* 모든 객체는 [[Prototype]]이라는 내부 슬롯을 가진다.
+* [[Prototype]] 내부 슬롯에 직접 접근을 할 수 없지만, ```__proto__``` 접근자 프로퍼티를 통해 간접적으로 접근이 가능하다.
+
+#### 19-3-1 ```__proto__``` 접근자 프로퍼티
+```js
+const person = { name: 'Lee' };
+```
+* 위 예제를 크롬 브라우저의 콘솔에서 출력
+![](./images/19/1.PNG)
+* ```__proto__``` 접근자 프로퍼티를 통해 Object.prototype에 접근한 결과이다.
+* **```__proto__```는 접근자 프로퍼티다.**
+  * 내부 슬롯은 프로퍼티가 아니다.
+  * Object.prototyp의 ```__proto__```는 getter/setter를 통해 프로토타입을 취득하거나 할당한다.
+```js
+const obj = {};
+const parent = { x: 1 };
+
+// getter 함수인 get __proto__가 호출도디어 obj 객체의 프로토타입을 취득한다.
+obj.__proto__;
+
+obj.__proto__ = parent;
+
+console.log(obj.x); // 1
+```
+
+* **```__proto```접근자 프로퍼티는 상속을 통해 사용된다.**
+  * ```__proto__```접근자 프로퍼티는 객체가 직접 소유하는 프로퍼티가 아니라 Object.prototype의 프로퍼티다.
+  * 모든 객체는 상속을 통해 ```Object.prototype.__proto__``` 접근자 프로퍼티를 사용할 수 있다.
+
+
+
+
+
+
+
+
+
+
+
 ## 20장 strict mode
