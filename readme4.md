@@ -573,7 +573,227 @@ function Person(name) {
 * 생성자 함수 또는 리터럴 표기법으로 객체를 생성하면 프로토타입은 생성된 객체의 [[Prototype]] 내부 슬롯에 할당된다.
 
 ### 19-6 객체 생성 방식과 프로토타입의 결정
+* 객체는 아래와 같은 생성 방법이 있다.
+  * 객체 리터럴
+  * Object 생성자 함수
+  * 생성자 함수
+  * Object.create 메서드
+  * 클래스
+* 모두 추상 연산 OrdinaryObjectCreate에 의해 생성된다.
+* 프로토타입은 추상 연산 OrdinaryObjectCreate에 전달되는 인수에 의해 결정된다.
 
+#### 19-6-1 객체 리터럴에 의해 생성된 객체의 프로토타입
+* js 엔진은 객체를 생성할 때 OrdinaryObjectCreate를 호출한다.
+```js
+const obj = { x: 1 };
+```
+* obj 객체는 Object.prototype을 프로토타입으로 가지며 상속받는다.
+
+#### 19-6-2 Object 생성자 함수에 의해 생성된 객체의 프로토타입
+* Object 생성자 함수를 호출하면 OrdinaryObjectCreate가 호출된다.
+* 이 때 OrdinaryObjectCreate에 전달되는 프로토타입은 Object.prototype이다.
+
+### 19-7 프로토타입 체인
+```js
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function () {
+  console.log(`Hi! My Name is ${this.name}`);
+};
+
+const me = new Person('Lee');
+```
+* me 객체는 hasOwnProperty를 호출할 수 있다.
+* Object.prototype도 상속받았다는 것을 의미한다.
+* JS는 객체의 프로퍼티에 접근하려고 할 댸 해당 객체에 접근하려는 프로퍼티가 없다면 [[Prototype]] 내부 슬롯의 참조를 따라 자신의 부모 역할을 하는 프로토타입의 프로퍼티를 순차적으로 검색한다.
+* 이를 프로토타입 체인이라고 한다. 프로토타입 체인은 js가 객체지향 프로그래밍의 상속을 구현하는 메커니즘이다.
+* 프로토타입 체인의 최상위의 객체는 언제나 Object.prototype이다.
+  * Object.prototype을 프로토타입 체인의 종점이라고 한다.
+* 프로토타입 체인은 상속과 프로퍼티 검색을 위한 메커니즘이다.
+* 스코프 체인은 식별자 검색을 위한 메커니즘이다.
+* 스코프체인과 프로토타입 체인은 서로 협력하여 식별자와 프로퍼티를 검색하는 데 사용된다.
+
+### 19-8 오버라이딩과 프로퍼티 섀도잉
+* 메서드를 다시 쓰는걸 오버라이딩 메서드가 가려지는 현상을 프로퍼티 섀도잉이라고 한다.
+* 하위 객체를 통해 프로토타입의 프로퍼티를 변경 또는 삭제는 불가능하다.
+
+### 19-9 프로토타입의 교체
+* 프로토타입은 동적으로 변경이 가능하다.
+
+#### 19-9-1 생성자 함수에 의한 프로토타입의 교체
+```js
+const Person = (function Person() {
+  function Person(name) {
+    this.name = name;
+  }
+
+// 1.
+  Person.prototype = {
+    sayHello() {
+      console.log(`Hi! My name is ${this.name}`);
+    }
+  };
+
+  return Person;
+}());
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function () {
+  console.log(`Hi! My Name is ${this.name}`);
+};
+
+const me = new Person('Lee');
+```
+* 1에서 객체 리터럴을 Person.prototype에 할당했다.
+
+#### 19-9-2 인스턴스에 의한 프로토타입의 교체
+* 프로토타입은 인스턴스의 ```__proto__``` 접근자 프로퍼티로도 접근할 수 있다.
+* 생성자 함수와 인스턴스에 의한 프로토타입 교체는 미묘한 차이가 있다.
+* 프로토타입은 직접 교체하지 않는 것이 좋다.
+
+### 19-10 instanceof 연산자
+* instanceof 연산자는 이항 연산자이다.
+  * 좌변에 객체를 가리키는 식별자, 우변에 생성자 함수를 가리키는 식별자를 피연산자로 받는다.
+  * 우변이 함수가 아니면 에러가 발생한다.
+```js
+객체 instanceof 생성자 함수
+```
+* 우변의 생성자 함수의 prototype에 바인딩된 객체가 좌변의 객체의 프로토타입 체인 상에 존재하면 true 아니면 false이다.
+```js
+function Person(name) {
+  this.name = name;
+}
+const me = new Person('Lee');
+
+console.log(me instanceof Person);  // true
+console.log(me instanceof Object);  // true
+```
+* 생성자 함수의 prototype에 바인딩된 객체가 프로토타입 체인 상에 존재하는지 확인한다.
+
+### 19-11 직접 상속
+#### 19-11-1 Object.create에 의한 직접 상속
+* Object.create 메서드는 첫 번쨰 매개변수에 전달한 객체의 프로토타입 체인에 속하는 객체를 생성한다.
+* 객체를 생성하면서 직접적으로 상속을 구현하는 것이다.
+  * 장점은 아래와 같다.
+  * new 연산자가 없어도 객체를 생성할 수 있다.
+  * 프로토타입을 지정하면서 객체를 생성할 수 있다.
+  * 객체 리터럴에 의해 생성된 객체도 상속받을 수 있다.
+#### 19-11-2 객체 리터럴 내부에서 ```__proto__```에 의한 직접 상속
+* ES6에서는 객체 리터럴 내부에서 ```__proto__``` 접근자 프로퍼티를 사용하여 직접 상속을 구현할 수 있다.
+```js
+const myProto = { x: 10 };
+const obj = {
+  y: 20,
+  // 객체를 직접 상속
+  // obj -> myProto -> Object.prototype -> null
+  __proto__: myProto,
+};
+```
+
+### 19-12 정적 프로퍼티/메서드
+* 정적 프로퍼티/메서드는 생성자 함수로 인스턴스를 생성하지 않아도 참조/호출할 수 있는 프로퍼티/메서드이다.
+```js
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function () {
+  console.log(`Hi! My name is ${this.name}`);
+}
+
+// 정적 프로퍼티
+Person.staticProp = 'static prop';
+
+// 정적 메서드
+Person.staticMethod = function () {
+  console.log('staticMethod');
+};
+
+const me = new Person('Lee');
+```
+* Person 생성자 함수 객체가 소유한 프로퍼티 메서드를 정적 프로퍼티/메서드라고 한다.
+* 인스턴스로 참조/호출 불가능하다.
+
+### 19-13 프로퍼티 존재 확인
+#### 19-13-1 in 연산자
+* in 연산자는 객체 내에 특정 프로퍼티가 존재하는지 여부를 확인한다.
+```js
+// key: 프로퍼티 키를 나타내는 문자열
+// object: 객체로 평가되는 표현식
+key in object
+```
+```js
+const person = {
+  name: 'Lee',
+  address: 'Seoul',
+};
+
+console.log('name' in person);  // true
+console.log('address' in person); // true
+console.log('age' in person); // false
+console.log('toString' in person);  // true
+```
+* in은 확인 대상 객체의 프로퍼티 및 상속받은 모든 프로퍼티를 확인한다.
+* in 대신 ES6에서 되입된 Reflect.has를 사용할 수 있다. in과 동일하게 동작한다.
+
+#### 19-13-2 Object.prototype.hasOwnProperty 메서드
+* Object.prototype.hasOwnProperty 메서드를 사용해도 객체에 특정 프로퍼티가 존재하는지 확인할 수 있다.
+```js
+console.log(person.hasOwnProperty('name')); //true
+console.log(person.hasOwnProperty('age')); //false
+// 상속 받은 프로퍼티인 경우 false
+console.log(person.hasOwnProperty('toString')); //false
+```
+
+### 19-14 프로퍼티 열거
+#### 19-14-1 for ... in 문
+* 객체의 모든 프로퍼티를 순회하며 열거하려면 for ... in 문을 사용한다.
+```js
+for(변수선언문 in 객체) {...}
+```
+```js
+const person = {
+  name: 'Lee',
+  address: 'Seoul',
+};
+
+for (const key in person) {
+  console.log(key + ': ' + person[key]);
+}
+
+// name: Lee
+// address: Seoul
+```
+* 상속받은 프로퍼티까지 열거한다.
+* Object.prototype의 프로퍼티는 열거되지 않는다.
+* **for ... in 문은 객체의 프로토타입 체인 상에 존재하는 모든 프로토타입의 프로퍼티 중에서 프로퍼티 어트리뷰트 [[Enumerable]]의 값이 true인 프로퍼티를 순회하며 열거한다.**
+* 프로퍼티 열거시 순서를 보장하지 않는다.
+  * 대부분의 모던 브라우저는 순서를 보장하며 숫자인 프로퍼티 키에 대해서는 정렬을 실시한다.
+* 배열에는 for문이나 for of문 forEach메서드를 사용하자
+
+#### 19-14-2 Object.keys/values/entries 메서드
+* 객체 자신의 고유 프로퍼티만 열거하기 위해서는 Object.keys/values/entries 메서드를 사용하는 것을 권장한다.
+* Object.keys ㅔㅁ서드는 객체 자신의 열거 가능한 프로퍼티 키를 배열로 반환한다.
+```js
+const person = {
+  name: 'Lee',
+  address: 'Seoul',
+  __proto__: { age: 20 },
+};
+
+console.log(Object.keys(person));  // ["name", "address"]
+// ES8
+console.log(Object.values(person));  // ["Lee", "Seoul"]
+// ES8
+console.log(Object.entries(person));  // [["name", "Lee"], ["address", "Seoul]]
+Object.entries(person).forEach(([key, value]) => console.log(key,value));
+// name Lee
+// address Seoul
+```
 
 
 
