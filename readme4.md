@@ -795,7 +795,38 @@ Object.entries(person).forEach(([key, value]) => console.log(key,value));
 // address Seoul
 ```
 
-
-
-
 ## 20장 strict mode
+### 20-1 strict mode란?
+* 변수 선언을 하고 참조할 경우 js 엔진은 암묵적으로 전역 객체에 변수 프로퍼티를 동적 생성한다.
+* 이를 암묵적 전역이라고 부른다.
+* ES5부터 실수를 줄이기 위해 strict mode가 추가되었다.
+* strict mode는 문법을 엄격히 적용한다.
+
+### 20-2 strict mode의 적용
+* 전역의 선두 또는 함수 몸체의 선두에 'use strict';를 추가한다.
+```js
+'use strict';
+
+function foo() {
+  x = 10;   // 에러
+}
+foo():
+```
+
+### 20-3 전역에 strict mode를 적용하는 것은 피하자
+* 전역에 적용한 strict mode는 스크립트 단위로 적용된다.
+
+### 20-4 함수 단위로 strict mode를 적용하는 것도 피하자
+* strict mode는 즉시 실행 함수로 감싼 스크립트 단위로 적용하는 것이 바람직하다.
+
+### 20-5 strict mode가 발생시키는 에러
+* 암묵적 전역
+* 변수, 함수, 매개변수의 삭제
+* 매개변수 이름의 중복
+* with 문의 사용
+
+### 20-6 strict mode 적용에 의한 변화
+* 일반 함수의 this
+  * strict mode에서 함수를 일반 함수로서 호출하면 this에 undefined가 바인딩된다.
+* arguments 객체
+  * 매개변수에 전달된 인수를 재할당하여 변경해도 arguments 객체에 반영되지 않는다.
