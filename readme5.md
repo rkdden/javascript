@@ -67,9 +67,17 @@ console.log(x); // 5
 * **isNaN**: 전달받은 인수가 NaN인지 검사하여 결과를 불리언으로 반환한다. 숫자면 false, 숫자가 아니면 true를 반환한다.
 * **parseFloat**: 전달받은 문자열 인수를 실수로 해석하여 반환한다.
 * **parseInt**: 문자열 인수를 정수로 해석하여 반환한다. 두번째 인수로 진법을 정의할 수 있다.
+* **encodeURI/decodeURI**
+![](./images/21/URL.png)
+  * encodeURI는 완전한 URI를 문자열로 전달받아 인코딩한다.
+  * decodeURI는 인코딩된 URI를 인수로 전달받아 디코딩한다.
+* **encodeURIComponent/decodeURIcomponent**
+  * encodeURIComponent는 URI 구성 요소를 인수로 전달받아 인코딩한다.
+  * decodeURIComponent는 URI 구성 요소를 인수로 전달받아 디코딩한다.
 
-
-
+### 21-4-3 암묵적 전역
+* 선언되지 않은 객체는 js엔진에 의해 전역 객체의 프로퍼티가 되어 전역 변수처럼 동작한다.
+* 이러한 현상을 암묵적 전역이라고 한다.
 
 # 22장 this
 # 23장 실행 컨텍스트
